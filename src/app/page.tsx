@@ -15,7 +15,7 @@ export default function Home() {
         <div className="flex flex-col bg-amber-400 w-full p-6 relative">
           <Image src={willogo.src} alt="logo" width={150} height={150} />
         </div>
-        <div className="w-full md:w-1/2 lg:w-1/2 xl:w-1/2 flex justify-center items-center flex-grow">
+        <div className="w-screen overflow-auto md:w-1/2 lg:w-1/2 xl:w-1/2 flex justify-center items-center flex-grow">
           <FullCalendarComponent />
         </div>
         <div className="w-full relative"><Image src={catplying.src} alt="catplaying" width={150} height={150} className=" left-0 top-0" style={{marginBottom:'-0.65em'}}/></div>
