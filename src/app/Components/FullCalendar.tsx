@@ -24,6 +24,7 @@ const FullCalendarComponent = () => {
   
   const { Bookings, setBookings } = useBookingsContext();
   const [events, setEvents] = useState<Array<Event>>([])
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
   useEffect(() => {
     const ws = new WebSocket('wss://wsserver-production-afea.up.railway.app');
@@ -76,6 +77,28 @@ const FullCalendarComponent = () => {
   const [dateSelected, setDateSelected] = useState<string>(new Date().toISOString().split("T")[0]);
   useEffect(() => {
       if (events?.length > 0 && Bookings?.facilities) {
+        const today = new Date().toISOString().split("T")[0];
+
+        // If the selected date is before today, set all cells to "N/A"
+        if (dateSelected < today) {
+          const matrix: Array<Row> = Array.from({ length: 32 }, (_, i) => {
+            const hours = Math.floor(i / 2) + 6;
+            const minutes = i % 2 === 0 ? "00" : "30";
+            const timeslot = `${hours.toString().padStart(2, "0")}:${minutes} - ${(
+              hours + (minutes === "30" ? 0 : 1)
+            )
+              .toString()
+              .padStart(2, "0")}:${minutes === "30" ? "00" : "30"}`;
+
+            return {
+              timeslot,
+              data: Array(Bookings.facilities.length).fill("N/A"),
+            };
+          });
+
+          setEventMatrix(matrix);
+          return;
+        }
         // Generate time slots from 6:00 AM to 10:00 PM (30-minute intervals)
         const dateTimeArray = Array.from({ length: 33 }, (_, i) => {
           const hours = Math.floor(i / 2) + 6;
@@ -165,6 +188,7 @@ const FullCalendarComponent = () => {
       toast.success("Bookings data updated.", { autoClose: 1500 });
       toastShown.current = true; // Mark toast as shown
     }
+    setLastUpdated(new Date())
   
     // Reset toast flag after 1.5 seconds to allow future updates
     const resetToast = setTimeout(() => {
@@ -180,13 +204,18 @@ const FullCalendarComponent = () => {
       <>
         {eventMatrix?.length>0?
           <div className="w-full flex-grow flex flex-col gap-3">
-            <input onChange={(e)=>{setDateSelected(e.target.value)}} defaultValue={dateSelected} type="date" name="date" id="date" className="self-end p-3 shadow-md border-2 border-amber-400 bg-white rounded-md mt-3"/>
+            <div className="w-full flex justify-between items-end">
+              <Typography variant="caption" color="gray">
+                {`Last updated on ${lastUpdated.toDateString()} at ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`}
+              </Typography>
+              <input min={new Date().toISOString().split("T")[0]} onChange={(e)=>{setDateSelected(e.target.value)}} defaultValue={dateSelected} type="date" name="date" id="date" className="self-end p-3 shadow-md border-2 border-amber-400 bg-white rounded-md mt-3"/>
+            </div>
             <table className="border-separate gap-3 w-full h-screen px-12 rounded-md py-3 overflow-auto bg-black border-2">
               <thead className="text-white">
                 <tr>
-                    <th className="bg-amber-400 text-2xl p-3 text-black">Time Slot</th>
+                    <th className="bg-amber-400 text-xs md:text-sm lg:text-lg xl:text-lg p-3 text-black">Time Slot</th>
                     {Bookings?.facilities?.map((facility, index)=>(
-                      <th className="bg-amber-400 text-2xl p-3 text-black" key={index}>{facility.facilityname}</th>
+                      <th className="bg-amber-400 text-xs md:text-sm lg:text-lg xl:text-lg p-3 text-black" key={index}>{facility.facilityname}</th>
                     ))}
                 </tr>
               </thead>
@@ -194,9 +223,9 @@ const FullCalendarComponent = () => {
                 
                   {eventMatrix?.map((event,index)=>(
                     <tr key={index}>
-                      <td className='py-3 bg-white'>{event.timeslot}</td>
+                      <td className='py-3 text-xs md:text-sm lg:text-lg xl:text-lg bg-white'>{event.timeslot}</td>
                       {event?.data?.map((data,index)=>(
-                        <td key={index} className={`py-3 bg-white ${data == "Fully Booked" || data == "--"?'text-red-500':data.includes('0') || data == 'No Booking'?'text-green-800':'text-orange-400 text-xl'}`}>{data}</td>
+                        <td key={index} className={`py-3 text-xs md:text-sm lg:text-lg xl:text-lg bg-white ${data == "Fully Booked" || data == "--"?'text-red-500':data.includes('0') || data == 'No Booking'?'text-green-800':'text-orange-400 text-xl'}`}>{data}</td>
                       ))}
                       
                     </tr>
