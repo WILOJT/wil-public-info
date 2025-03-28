@@ -223,7 +223,7 @@ const FullCalendarComponent = () => {
                 
                   {eventMatrix?.map((event,index)=>(
                     <tr key={index}>
-                      <td className='py-3 text-xs md:text-sm lg:text-lg xl:text-lg bg-white'>{event.timeslot}</td>
+                      <td className='py-3 text-xs md:text-sm lg:text-lg xl:text-lg text-black font-bold bg-white opacity-100'>{event.timeslot}</td>
                       {event?.data?.map((data,index)=>(
                         <td key={index} className={`py-3 text-xs md:text-sm lg:text-lg xl:text-lg bg-white ${data == "Fully Booked" || data == "--"?'text-red-500':data.includes('0') || data == 'No Booking'?'text-green-800':'text-orange-400 text-xl'}`}>{data}</td>
                       ))}
